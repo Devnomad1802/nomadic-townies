@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Bowlby+One&family=Caveat+Brush&family=Caveat:wght@400;600&family=Archivo:wght@400;500;600;700;800&family=Archivo+Narrow:wght@500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body { @apply bg-paper text-ink font-sans antialiased overflow-x-hidden; }
+  body::before {
+    content: '';
+    position: fixed; inset: 0; pointer-events: none; z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.6 0 0 0 0 0.4 0 0 0 0 0.2 0 0 0 0.18 0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.45; mix-blend-mode: multiply;
+  }
+  #root { position: relative; z-index: 2; }
+}
+
+@layer components {
+  .doodle-border { @apply border-2 border-ink rounded-2xl; }
+  .tape {
+    position: absolute; background: rgba(232,181,71,0.65);
+    width: 80px; height: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details summary { list-style: none; cursor: pointer; }
+  details[open] .day-toggle { transform: rotate(45deg); }
+  .day-toggle { transition: transform 0.3s; }
+}
