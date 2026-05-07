@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Check, Lock, Loader2, ArrowRight } from 'lucide-react';
 import { openRazorpayCheckout } from '../lib/razorpay';
 import { notifyBooking } from '../lib/notify';
+import { urlFor } from '../data/trips';
 
 export default function BookingModal({ trip, onClose }) {
   // steps: 'details' -> 'book' -> 'success'
@@ -39,7 +40,7 @@ export default function BookingModal({ trip, onClose }) {
         
         notifyBooking({
           payment_id: response.razorpay_payment_id,
-          trip_slug: trip.slug,
+          trip_slug: trip.slug.current,
           trip_name: trip.name,
           amount_paid: paymentType === 'full' ? trip.price : trip.advance,
           payment_type: paymentType,
@@ -64,7 +65,13 @@ export default function BookingModal({ trip, onClose }) {
       <div className="relative w-full max-w-3xl max-h-[92vh] sm:max-h-[85vh] bg-paper sm:rounded-2xl rounded-t-2xl sm:doodle-border flex flex-col overflow-hidden animate-slide-up shadow-hard-sm">
         {/* Header Hero */}
         <div className="relative h-48 sm:h-56 shrink-0 border-b-2 border-ink bg-ink">
-          <img src={trip.heroImg} alt={trip.name} className="w-full h-full object-cover opacity-80" />
+          {trip.heroImg && (
+            <img 
+              src={urlFor(trip.heroImg).width(1200).url()} 
+              alt={trip.name} 
+              className="w-full h-full object-cover opacity-80" 
+            />
+          )}
           <button 
             onClick={onClose}
             className="absolute top-4 right-4 w-8 h-8 rounded-full bg-cream text-ink flex items-center justify-center hover:bg-brick hover:text-cream transition-colors border-2 border-ink z-10"
@@ -115,7 +122,7 @@ export default function BookingModal({ trip, onClose }) {
                 <span className="text-sun">★</span> Trip Highlights
               </h3>
               <ul className="grid sm:grid-cols-2 gap-y-3 gap-x-6 mb-8 text-sm">
-                {trip.highlights.map((hl, i) => (
+                {trip.highlights?.map((hl, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <span className="text-brick mt-0.5">★</span>
                     <span className="text-ink/80">{hl}</span>
@@ -126,7 +133,7 @@ export default function BookingModal({ trip, onClose }) {
               {/* Itinerary */}
               <h3 className="font-hand text-xl mb-4 mt-8">Day by Day</h3>
               <div className="space-y-3 mb-10">
-                {trip.itinerary.map((day, i) => (
+                {trip.itinerary?.map((day, i) => (
                   <details key={i} className="group bg-cream border border-ink/15 rounded-xl overflow-hidden" open={i === 0}>
                     <summary className="flex items-center gap-4 p-4 hover:bg-cream/80 select-none">
                       <div className="w-9 h-9 shrink-0 rounded-full bg-ink text-cream flex items-center justify-center font-narrow font-bold text-[11px]">
@@ -142,7 +149,7 @@ export default function BookingModal({ trip, onClose }) {
                     </summary>
                     <div className="p-4 pt-0 pl-16 border-t border-dashed border-ink/10">
                       <ul className="space-y-2 mt-3 text-sm text-ink/70">
-                        {day.desc.map((item, idx) => (
+                        {day.desc?.map((item, idx) => (
                           <li key={idx} className="flex items-start gap-2">
                             <span className="w-1 h-1 rounded-full bg-ink/30 mt-1.5 shrink-0" />
                             {item}
@@ -161,7 +168,7 @@ export default function BookingModal({ trip, onClose }) {
                     <Check size={16} /> What's Included
                   </h4>
                   <ul className="space-y-2 text-sm text-ink/70">
-                    {trip.inclusions.map((inc, i) => (
+                    {trip.inclusions?.map((inc, i) => (
                       <li key={i} className="flex gap-2">
                         <span className="text-leaf/60">+</span> {inc}
                       </li>
@@ -173,7 +180,7 @@ export default function BookingModal({ trip, onClose }) {
                     <X size={16} /> What's Not Included
                   </h4>
                   <ul className="space-y-2 text-sm text-ink/70">
-                    {trip.exclusions.map((exc, i) => (
+                    {trip.exclusions?.map((exc, i) => (
                       <li key={i} className="flex gap-2">
                         <span className="text-brick/60">-</span> {exc}
                       </li>
@@ -209,7 +216,7 @@ export default function BookingModal({ trip, onClose }) {
                     Pay Full
                     {paymentType === 'full' && <Check size={16} className="text-brick" />}
                   </p>
-                  <p className="text-xs text-ink/60">₹{trip.price.toLocaleString('en-IN')}</p>
+                  <p className="text-xs text-ink/60">₹{trip.price?.toLocaleString('en-IN')}</p>
                 </button>
                 <button
                   onClick={() => setPaymentType('advance')}
@@ -223,7 +230,7 @@ export default function BookingModal({ trip, onClose }) {
                     Pay Advance
                     {paymentType === 'advance' && <Check size={16} className="text-brick" />}
                   </p>
-                  <p className="text-xs text-ink/60">₹{trip.advance.toLocaleString('en-IN')} now</p>
+                  <p className="text-xs text-ink/60">₹{trip.advance?.toLocaleString('en-IN')} now</p>
                 </button>
               </div>
 
@@ -277,11 +284,11 @@ export default function BookingModal({ trip, onClose }) {
               <div className="bg-ink text-cream rounded-2xl p-5 mb-6 shadow-hard-sm">
                 <p className="text-sm text-cream/70 mb-1">You pay now:</p>
                 <p className="font-hand text-3xl text-sun mb-2">
-                  ₹{(paymentType === 'full' ? trip.price : trip.advance).toLocaleString('en-IN')}
+                  ₹{(paymentType === 'full' ? trip.price : trip.advance)?.toLocaleString('en-IN')}
                 </p>
                 {paymentType === 'advance' && (
                   <p className="text-xs text-cream/50 pt-3 border-t border-cream/10">
-                    Balance ₹{(trip.price - trip.advance).toLocaleString('en-IN')} due 30 days before departure
+                    Balance ₹{(trip.price - trip.advance)?.toLocaleString('en-IN')} due 30 days before departure
                   </p>
                 )}
               </div>
@@ -292,7 +299,7 @@ export default function BookingModal({ trip, onClose }) {
                 className="w-full bg-brick text-cream font-narrow font-bold text-[16px] uppercase tracking-wide py-4 rounded-xl hover:bg-brick-deep transition-colors flex items-center justify-center gap-2 shadow-hard-brick disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {isPaying ? <Loader2 size={20} className="animate-spin" /> : <Lock size={16} />}
-                {isPaying ? 'Processing...' : `Pay ₹${(paymentType === 'full' ? trip.price : trip.advance).toLocaleString('en-IN')} via Razorpay`}
+                {isPaying ? 'Processing...' : `Pay ₹${(paymentType === 'full' ? trip.price : trip.advance)?.toLocaleString('en-IN')} via Razorpay`}
               </button>
               
               <div className="mt-4 flex items-center justify-center gap-2 text-[10px] text-ink/40 font-narrow uppercase tracking-wider">
@@ -335,7 +342,7 @@ export default function BookingModal({ trip, onClose }) {
             <div>
               <p className="text-[11px] font-narrow font-bold uppercase tracking-wider text-ink/50 mb-0.5">Starting at</p>
               <div className="flex items-baseline gap-2">
-                <span className="font-hand text-2xl sm:text-3xl text-brick leading-none">₹{trip.price.toLocaleString('en-IN')}</span>
+                <span className="font-hand text-2xl sm:text-3xl text-brick leading-none">₹{trip.price?.toLocaleString('en-IN')}</span>
               </div>
             </div>
             <button 

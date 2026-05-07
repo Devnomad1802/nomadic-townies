@@ -1,13 +1,32 @@
 import { useState } from 'react';
-import { TRIPS } from '../data/trips';
-import { Heart, MapPin, Clock, CalendarDays } from 'lucide-react';
+import { useTrips, urlFor } from '../data/trips';
+import { MapPin, Clock, CalendarDays, Loader2 } from 'lucide-react';
 
 const FILTERS = ['All', 'India', 'International'];
 
 export default function Trips({ onBook }) {
   const [filter, setFilter] = useState('All');
+  const { trips, loading, error } = useTrips();
 
-  const filtered = filter === 'All' ? TRIPS : TRIPS.filter((t) => t.region === filter);
+  const filtered = filter === 'All' ? trips : trips.filter((t) => t.region === filter);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 min-h-[400px] text-ink/40">
+        <Loader2 className="animate-spin mb-4" size={32} />
+        <p className="font-narrow font-bold uppercase tracking-widest text-[11px]">Syncing with basecamp...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-20 px-8">
+        <h3 className="font-hand text-3xl text-brick mb-4">something went wrong.</h3>
+        <p className="text-ink/60">We couldn't load the cohorts. Please try refreshing.</p>
+      </div>
+    );
+  }
 
   return (
     <section id="trips" className="max-w-[1280px] mx-auto px-5 lg:px-8 py-20 lg:py-28">
@@ -45,21 +64,23 @@ export default function Trips({ onBook }) {
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {filtered.map((trip) => (
           <article
-            key={trip.slug}
+            key={trip.slug.current}
             className="group doodle-border bg-cream overflow-hidden hover:shadow-hard hover:-translate-y-1 transition-all duration-300 cursor-pointer"
             onClick={() => onBook(trip)}
           >
             {/* Image */}
             <div className="relative overflow-hidden border-b-2 border-ink">
-              <img
-                src={trip.img}
-                alt={trip.name}
-                className="w-full aspect-[4/3] object-cover group-hover:scale-105 transition-transform duration-700"
-              />
+              {trip.img && (
+                <img
+                  src={urlFor(trip.img).width(900).url()}
+                  alt={trip.name}
+                  className="w-full aspect-[4/3] object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+              )}
               {/* Tag */}
               <span
                 className="absolute top-3 left-3 bg-cream border-2 border-ink rounded-full px-3 py-1 font-narrow font-bold text-[11px] uppercase tracking-wider"
-                style={{ color: trip.tagColor }}
+                style={{ color: trip.tagColor || '#D44424' }}
               >
                 {trip.tag}
               </span>
@@ -100,10 +121,12 @@ export default function Trips({ onBook }) {
               {/* Footer */}
               <div className="border-t-2 border-dashed border-ink/15 pt-4 flex items-center justify-between">
                 <div>
-                  <span className="font-hand text-2xl text-brick">₹{trip.price.toLocaleString('en-IN')}</span>
-                  <span className="text-ink/40 text-sm line-through ml-2">
-                    ₹{trip.originalPrice.toLocaleString('en-IN')}
-                  </span>
+                  <span className="font-hand text-2xl text-brick">₹{trip.price?.toLocaleString('en-IN')}</span>
+                  {trip.originalPrice && (
+                    <span className="text-ink/40 text-sm line-through ml-2">
+                      ₹{trip.originalPrice.toLocaleString('en-IN')}
+                    </span>
+                  )}
                 </div>
                 <button
                   onClick={(e) => {
@@ -122,3 +145,4 @@ export default function Trips({ onBook }) {
     </section>
   );
 }
+
